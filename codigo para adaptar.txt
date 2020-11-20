@@ -1,0 +1,32 @@
+If IsNull(txt_cpf) Or _
+   IsNull(txt_data) Or _
+   IsNull(txt_pgto) Then
+    MsgBox ("Preencha todos os campos"), vbExclamation + vbOKOnly, "ATENÇÃO"
+Else
+  sql = "insert into tb_pedido (cpf, data_compra, forma_pgto) values ('" & txt_cpf & "', " & _
+                                                                      "'" & txt_data & "', " & _
+                                                                      "'" & txt_pgto & "')"
+  db.Execute (UCase(sql))
+  sql = "select * from tb_pedido where cpf = '" & txt_cpf & "'"
+  Call validar_leitura
+  If rs.EOF = False Then
+    toInt = rs.Fields(0)
+  End If
+  For i = 1 To 15
+        If idArray(i) <> 0 Then
+            sql = "insert into tb_detalhe_pedido (id_pedido, id_produto, qtd) values ('" & toInt & "', " & _
+                                                                                      "'" & idArray(i) & "', " & _
+                                                                                      "'" & qtdArray(i) & "')"
+            db.Execute (sql)
+        End If
+  Next
+  For i = 1 To 15
+        If idArray(i) <> 0 Then
+            sql = "UPDATE tb_produto set qtd = (qtd -" & qtdArray(i) & ") where tb_produto.id_produto = " & _
+                          idArray(i) & ";"
+            db.Execute (sql)
+        End If
+  Next
+  MsgBox ("Dados Gravados com sucesso!"), vbExclamation + vbOKOnly, "CADASTRO FEITO"
+  Call limpar_cadastro_compras
+End If
